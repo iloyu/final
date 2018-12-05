@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="libs/three.js"></script>
+    <script type="text/javascript" src="libs/OrbitControls.js"></script>
+    <!-- <script type="text/javascript" src="CanvasRenderer.js"></script> -->
+    <script type="text/javascript" src="js/renderers/Projector.js"></script>
+    <style>
+        #world {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(#e4dcdc, #c0f2f7);
+        }
+    </style>
+</head>
+<body>
+<div id="world"></div>
+<script>
+    //COLORS
+    var Colors ={
+        white:'#f7fff3',
+        flo1:'#e0c9e4',
+        flo2:'#e4c4c0',
+        flo3:'#e4a5a7',
+        branch1:'#435516',
+        branch2:'#55492c',
+        blue:'#65f7e2',
+        glass:'#95e9aa'
+    };
+ 
+    // THREEJS RELATED VARIABLES
+    var scene,
+        camera, fieldOfView, aspectRatio, nearPlane, farPlane, renderer, container;
+ 
+    //SCREEN & MOUSE VARIABLES
+    var HEIGHT, WIDTH;
+ 
+    //INIT THREE JS, SCREEN AND MOUSE EVENTS
+    function createScene() {
+ 
+        HEIGHT = window.innerHeight;
+        WIDTH = window.innerWidth;
+ 
+        scene = new THREE.Scene();
+        aspectRatio = WIDTH / HEIGHT;
+        fieldOfView = 60;
+        nearPlane = 1;
+        farPlane = 10000;
+        camera = new THREE.PerspectiveCamera(
+            fieldOfView,
+            aspectRatio,
+            nearPlane,
+            farPlane
+        );
+        scene.fog = new THREE.Fog('#f7fff3', 100,950);
+        camera.position.x = 0;
+        camera.position.z = 200;
+        camera.position.y = 100;
+ 
+        renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.shadowMap.enabled = true;
+        container = document.getElementById('world');
+        container.appendChild(renderer.domElement);
+ 
+        window.addEventListener('resize', handleWindowResize, false);
+    }
+ 
+    // HANDLE SCREEN EVENTS
+ 
+    function handleWindowResize() {
+        HEIGHT = window.innerHeight;
+        WIDTH = window.innerWidth;
+        renderer.setSize(WIDTH, HEIGHT);
+        camera.aspect = WIDTH / HEIGHT;
+        camera.updateProjectionMatrix();
+    }
+ 
+ 
+    // LIGHTS
+    var  hemisphereLight, shadowLight;
+ 
+    function createLights() {
+ 
+        hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9);
+        shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+        shadowLight.position.set(150, 350, 350);
+        shadowLight.castShadow = true;
+        shadowLight.shadow.camera.left = -400;
+        shadowLight.shadow.camera.right = 400;
+        shadowLight.shadow.camera.top = 400;
+        shadowLight.shadow.camera.bottom = -400;
+        shadowLight.shadow.camera.near = 1;
+        shadowLight.shadow.camera.far = 1000;
+        shadowLight.shadow.mapSize.width = 2048;
+        shadowLight.shadow.mapSize.height = 2048;
+ 
+        scene.add(hemisphereLight);
+        scene.add(shadowLight);
+    }
+ 
+    function Land(){
+        var geom = new THREE.SphereGeometry(600,80,80);
+        geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+        var mat = new THREE.MeshPhongMaterial({
+            color:Colors.glass,
+            transparent:true,
+            opacity:0.8,
+            shading:THREE.FlatShading
+        });
+        this.mesh = new THREE.Mesh(geom, mat);
+        this.mesh.receiveShadow = true;
+    }
+ 
+    function Tree(){
+        this.mesh = new THREE.Object3D();
+        // 树干
+        var trunk = new THREE.CylinderGeometry(25,40,120,60,3);
+        var material1 = new THREE.MeshPhongMaterial({
+            color:Colors.branch2,
+            shading:THREE.FlatShading,
+            transparent:true,
+            opacity:0.8
+        });
+        var trunkMesh = new THREE.Mesh(trunk, material1);
+        trunkMesh.castShadow = true;
+        trunkMesh.receiveShadow = true;
+        this.mesh.add(trunkMesh);
+ 
+        //顶部
+        var topB=new Branch();
+        topB.mesh.scale.set(2,2,2);
+        topB.mesh.position.y = 80;
+        this.mesh.add(topB.mesh);
+ 
+        //中层
+        var len,moveX,moveY,moveZ,i;
+        var numMiddele=6;
+        var angleStepM=(Math.PI*2)/numMiddele;
+        for(i=0;i<6;i++)
+        {
+            var mid=new Branch();
+            var sc0=2;
+            mid.mesh.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/6));
+            mid.mesh.applyMatrix(new THREE.Matrix4().makeRotationY(angleStepM*i));
+            mid.mesh.scale.set(sc0,sc0,sc0);
+            len=Math.cos(Math.PI/2-Math.PI/6)*sc0*14;
+             moveX=-Math.cos(angleStepM*i)*len;
+            moveY=85;
+            moveZ=Math.sin(angleStepM*i)*len;
+            mid.mesh.position.set(moveX,moveY,moveZ);
+           // mid.mesh.position.y = 80;
+            this.mesh.add(mid.mesh);
+        }
+        //底层
+        var numBottom=10;
+        var angleStepB=(Math.PI*2)/numBottom;
+        for(i=0;i<numBottom;i++)
+        {
+            var sc=2.5;
+            var an=Math.PI/2-Math.PI/8*Math.random();
+            var bom=new Branch();
+            bom.mesh.applyMatrix(new THREE.Matrix4().makeRotationZ(an));
+            bom.mesh.applyMatrix(new THREE.Matrix4().makeRotationY(angleStepB*i));
+            bom.mesh.scale.set(sc,sc,sc);
+            len=Math.cos(Math.PI/2-an)*sc*14;
+            moveX=-Math.cos(angleStepB*i)*len;
+            moveY=75;
+            moveZ=Math.sin(angleStepB*i)*len;
+            bom.mesh.position.set(moveX,moveY,moveZ);
+            // mid.mesh.position.y = 80;
+            this.mesh.add(bom.mesh);
+        }
+ 
+ 
+    }
+ 
+    function Branch(){
+        this.mesh = new THREE.Object3D();
+        var trunk = new THREE.CylinderGeometry(1,2,28,12,1);
+        var scrown = new THREE.SphereGeometry(20,6,5,0,Math.PI*2,0,Math.PI/3);
+        var scale=[1.3,0.7,0.4];
+        var rotate=[0,Math.PI/6,-Math.PI/4];
+        var translation=[[0,0,0],[-6,-3,0],[4,-4,0]];
+ 
+        var Ele=[];
+          for (var i=1; i<=3; i++ ){
+              var s=scale[i-1];
+              var ro=rotate[i-1];
+              var trans=translation[i-1];
+              var crownMat = new THREE.MeshPhongMaterial({color:Colors['flo'+i], shading:THREE.FlatShading, transparent:true,
+                  opacity:0.8});
+              var trunkMat = new THREE.MeshPhongMaterial({color:Colors.branch1, shading:THREE.FlatShading,transparent:true,
+                  opacity:0.6});
+ 
+             var m1 = new THREE.Mesh(trunk.clone(), trunkMat);
+              m1.castShadow = true;
+              m1.receiveShadow = true;
+ 
+             var m2 = new THREE.Mesh(scrown.clone(), crownMat);
+              m2.position.set(0,10-Math.cos(Math.PI/3)*20,0);
+              m2.castShadow = true;
+              m2.receiveShadow = true;
+ 
+              m1.add(m2);
+              //先旋转 再缩放 再平移
+              m1.applyMatrix(new THREE.Matrix4().makeRotationZ(ro));
+              m1.scale.set(s,s,s);
+              m1.position.set(trans[0],trans[1],trans[2]);
+ 
+             this.mesh.add(m1);
+        }
+    }
+ 
+     function MuitiFlo(){
+        this.mesh = new THREE.Object3D();
+        this.nFlowers = 50;
+        var stepAngle = Math.PI*2 / this.nFlowers;
+        for(var i=0; i<this.nFlowers; i++){
+            var c = new Flower();
+            var a = stepAngle*i;
+            var h = 650 + Math.random()*200;
+            c.mesh.position.y = Math.sin(a)*h;
+            c.mesh.position.x = Math.cos(a)*h;
+            c.mesh.position.z = -100-Math.random()*100;
+            c.mesh.rotation.z = a - Math.PI/2;
+            var s = 0.2+Math.random()*0.2;
+            c.mesh.scale.set(s,s,s);
+            this.mesh.add(c.mesh);
+        }
+ 
+    }
+ 
+    //花朵
+    function Flower() {
+        this.mesh = new THREE.Object3D();
+ 
+        var trunk = new THREE.CylinderGeometry(1, 2, 16);
+        var petal=new THREE.CylinderGeometry(1, 1, 14);
+        var trunkmat = new THREE.MeshPhongMaterial({color: Colors.branch1, shading: THREE.FlatShading});
+        var trunkpetal = new THREE.MeshPhongMaterial({color: Colors.flo2, shading: THREE.FlatShading});
+        var trunkpetal1 = new THREE.MeshPhongMaterial({color: Colors.flo3, shading: THREE.FlatShading});
+        var tmesh = new THREE.Mesh(trunk, trunkmat);
+        tmesh.castShadow = true;
+        tmesh.receiveShadow = true;
+        this.mesh.add(tmesh);
+ 
+        var angleIndex=(Math.PI*2)/12;
+        var len,moveX,moveY,moveZ,i;
+        for (i = 0; i <12; i++) {
+            var m = new THREE.Mesh(petal, trunkpetal);
+            m.castShadow = true;
+            m.receiveShadow = true;
+ 
+            m.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/3));
+            m.applyMatrix(new THREE.Matrix4().makeRotationY(angleIndex*i));
+            len=Math.cos(Math.PI/6)*7;
+            moveX=-Math.cos(angleIndex*i)*len;
+            moveY=8;
+            moveZ=Math.sin(angleIndex*i)*len;
+            m.position.set(moveX,moveY,moveZ);
+ 
+            this.mesh.add(m);
+        }
+ 
+        angleIndex=(Math.PI*2)/8;
+        for (i = 0; i <8; i++) {
+            var m1 = new THREE.Mesh(petal, trunkpetal1);
+            m1.castShadow = true;
+            m1.receiveShadow = true;
+ 
+            m1.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/6));
+            m1.applyMatrix(new THREE.Matrix4().makeRotationY(angleIndex*i));
+            len=Math.cos(Math.PI/3)*7;
+            moveX=-Math.cos(angleIndex*i)*len;
+            moveY=8;
+            moveZ=Math.sin(angleIndex*i)*len;
+            m1.position.set(moveX,moveY,moveZ);
+ 
+            this.mesh.add(m1);
+        }
+    }
+ 
+    var land,tree,flos;
+    function init(event){
+        document.addEventListener('mousemove', handleMouseMove, false);
+        //创建场景
+        createScene();
+        //创建光线
+        createLights();
+ 
+        land = new Land();
+        land.mesh.position.y = -550;
+        land.mesh.position.x = 80;
+        land.mesh.position.z = -50;
+        scene.add(land.mesh);
+ 
+        tree=new Tree();
+        tree.mesh.position.y = 50;
+        tree.mesh.position.x = 80;
+        scene.add(tree.mesh);
+ 
+        //添加花朵
+ 
+        flos = new MuitiFlo();
+        flos.mesh.position.y = -550;
+        scene.add(flos.mesh);
+ 
+        loop();
+    }
+ 
+    //LOOP
+    function loop(){
+        renderer.render(scene, camera);
+        flos.mesh.rotation.z += .002;
+        tree.mesh.rotation.y+=0.001;
+        requestAnimationFrame(loop);
+    }
+    // HANDLE MOUSE EVENTS
+ 
+    var mousePos = { x: 0, y: 0 };
+ 
+    function handleMouseMove(event) {
+        var tx = -1 + (event.clientX / WIDTH)*2;
+        var ty = 1 - (event.clientY / HEIGHT)*2;
+        mousePos = {x:tx, y:ty};
+    }
+ 
+    window.addEventListener('load', init, false);
+ 
+ 
+</script>
+ 
+</body>
+</html>

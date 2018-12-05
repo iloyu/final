@@ -1,0 +1,70 @@
+
+<html>
+	  <head>
+        <meta charset="UTF-8">
+        <title>WebGL TEST</title>
+
+         <script type="text/javascript" src="libs/three.min.js"></script>
+          <script type="text/javascript" src="libs/dat.gui.min.js"></script>
+        <script type="text/javascript" src="libs/Stats.js"></script>
+        <script type="text/javascript" src="libs/TweenMax.min.js"></script>
+        <!-- <script type="text/javascript" src='libs/cannon.min.js'></script> -->
+        <script type="text/javascript" src='libs/TrackballControls.js'></script>
+      <!--   <script src='js/renderers/Projector.js'></script> -->
+        <script type="text/javascript" src='libs/PointerLockControls.js'></script>
+        <script type="text/javascript" src="libs/TweenMax.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/game.css" />
+        <!-- <script src="libs/stats.min.js"></script> -->
+		<style type="text/css">
+			div#world {
+				position: absolute;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+			}
+div#map {
+    background-color: #fff; /* or transparent; */
+            border: 1px solid black; /* or none; */
+            margin: 20px;
+            padding: 0px;
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            z-index: 100;
+   /* margin-top:200px;
+    position: relative;*/
+    width: 200px;
+    height: 200px;
+            }
+		</style>
+    </head>
+    <body>
+
+      
+       <div id="blocker">
+    <div id="instructions">
+        <span style="font-size:40px">小猪出发</span>
+        <br />
+        <br />
+        (W, A, S, D = 移动, click = 射击, MOUSE = 移动视角)
+    </div>
+</div>
+   <div  id="stats"><div>
+    <div class="score__content" id="dist">
+                        <div class="score__label">score</div>
+                        <div class="score__value score__value--dist" id="distValue">000</div>
+    </div>
+             <div class="world" id="world"></div>
+             <div class="map" id="map"></div>
+               <script type="text/javascript" src='js2/sky.js'></script>
+                 <script type="text/javascript" src='js2/pointlocker.js'></script>
+                 <script type="text/javascript" src='js2/particle.js'></script>
+                 <script type="text/javascript" src='js2/scores.js'></script>
+                 <script type="text/javascript" src="js2/pig.js" ></script>
+                 <script type="text/javascript" src="js2/buildings.js" ></script>
+                 <script type="text/javascript" src="js2/main.js" ></script> 
+         
+  
+       
+</body>
+</html>
