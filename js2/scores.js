@@ -32,7 +32,7 @@ GreenBalls.prototype.generate = function () {
     greenBallMesh.position.z = Math.cos(ANGLE * i + Math.PI / 3) * h;
     // greenBallMesh.rotation.y = Math.random() * Math.PI;
     // greenBallMesh.rotation.z = Math.random() * Math.PI;
-    greenBallMesh.angle = ANGLE * i + Math.PI / 3;
+    // greenBallMesh.angle = ANGLE * i + Math.PI / 3;
     greenBallMesh.h = h;
     this.mesh.add(greenBallMesh);
     this.meshArr.push(greenBallMesh);
@@ -48,15 +48,15 @@ GreenBalls.prototype.update = function (deltaTime,angleSpeed,position) {
     const angle = this.meshArr[i].angle;
     const h = this.meshArr[i].h;
     this.meshArr[i].position.x = Math.sin(angle) * h;
-    this.meshArr[i].position.y =0;
+    this.meshArr[i].position.y =20;
     this.meshArr[i].position.z = Math.cos(angle) * h;
     // 判断是否碰撞
     let diffX = this.meshArr[i].position.x - position.x;
     diffX = diffX > 0 ? diffX : -diffX;
     let diffZ = this.meshArr[i].position.z - position.z;
     diffZ = diffZ > 0 ? diffZ : -diffZ;
-    if (diffX <=10&&
-      diffZ <=10) {
+    if (diffX < 10&&
+      diffZ < 10) {
         particles.generate(10, position.clone(), 0x009999, 3);
         this.mesh.remove(this.meshArr[i]);
         // this.meshArr.shift();
