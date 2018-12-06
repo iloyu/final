@@ -27,7 +27,7 @@ var HEIGHT,
 var world,sphereBody;
 //动画
 var speed=1000;
-var upSpeed=500;
+var upSpeed=1000;
 var velocity = new THREE.Vector3();
 var rotation = new THREE.Vector3();
 var direction = new THREE.Vector3();
@@ -39,7 +39,7 @@ var downRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 
 var pig,buildings,tube,score=0;
 var cubeNum=10;
 var color = new THREE.Color();
-var angleSpeed=1;
+var angleSpeed=0.2;
 var boxes=[];
 var boxMeshes=[];
 
@@ -220,7 +220,7 @@ function initCamera(){
     scene.add(mapCamera);
 }
 function addCube(cubeNum){
-    var boxGeometry = new THREE.BoxGeometry(50,250,50,10,100,10);
+    var boxGeometry = new THREE.BoxGeometry(50,250,50,50,100,50);
     var radius=cubeNum+250;
     for ( var i = 0; i < cubeNum; i ++ )
     {
@@ -360,7 +360,7 @@ window.addEventListener("click", function(e) {
        if (tube) scene.remove(tube);
       // }});
       }
-      fieldDistance.innerHTML = Math.floor(score);
+      
     }
   }
 );
@@ -433,6 +433,7 @@ function render() {
              if(horizontalIntersections[i].distance<15)
              {
               flag=true;
+              score-=20;
               console.log("检测到碰撞");
               break;
             }
@@ -468,6 +469,7 @@ function render() {
           pig.threegroup.position.copy(view.position);
           pig.threegroup.rotation.y=view.rotation.y+Math.PI;
  greenBalls.update(delta,angleSpeed,pig.threegroup.position);
+ fieldDistance.innerHTML = Math.floor(score);
     }
 
     // renderer.setViewport( 0, 0, WIDTH, HEIGHT );
