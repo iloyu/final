@@ -32,7 +32,7 @@ GreenBalls.prototype.generate = function () {
     greenBallMesh.position.z = Math.cos(ANGLE * i + Math.PI / 3) * h;
     // greenBallMesh.rotation.y = Math.random() * Math.PI;
     // greenBallMesh.rotation.z = Math.random() * Math.PI;
-    // greenBallMesh.angle = ANGLE * i + Math.PI / 3;
+    greenBallMesh.angle = ANGLE * i + Math.PI / 3;
     greenBallMesh.h = h;
     this.mesh.add(greenBallMesh);
     this.meshArr.push(greenBallMesh);

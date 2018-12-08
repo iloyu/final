@@ -27,7 +27,7 @@ var HEIGHT,
 var world,sphereBody;
 //动画
 var speed=1000;
-var upSpeed=500;
+var upSpeed=800;
 var velocity = new THREE.Vector3();
 var rotation = new THREE.Vector3();
 var direction = new THREE.Vector3();
@@ -38,8 +38,9 @@ var downRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 
 //场景对象，游戏变量
 var pig,buildings,tube,score=0;
 var cubeNum=10;
+var cubeHeight=250;
 var color = new THREE.Color();
-var angleSpeed=1;
+var angleSpeed=0.5;
 var boxes=[];
 var boxMeshes=[];
 
@@ -58,7 +59,6 @@ var moveLeft = false;
 var moveRight = false;
 var canJump = false;
 var spaceUp = true; //处理一直按着空格连续跳的问题
-var fov=45;
 //datgui变量
 var gui;
 var datGui;
@@ -220,7 +220,8 @@ function initCamera(){
     scene.add(mapCamera);
 }
 function addCube(cubeNum){
-    var boxGeometry = new THREE.BoxGeometry(50,250,50,10,100,10);
+
+    var boxGeometry = new THREE.BoxGeometry(50,cubeHeight,50,10,100,10);
     var radius=cubeNum+250;
     for ( var i = 0; i < cubeNum; i ++ )
     {
@@ -462,12 +463,13 @@ function render() {
             //保证控制器的y轴在10以上
             if ( view.position.y < 10 ) {
                 velocity.y = 0;
-                view.position.y = 10;
+                view.position.y = 0;
                 canJump = true;
             }
           pig.threegroup.position.copy(view.position);
           pig.threegroup.rotation.y=view.rotation.y+Math.PI;
  greenBalls.update(delta,angleSpeed,pig.threegroup.position);
+  fieldDistance.innerHTML = Math.floor(score);
     }
 
     // renderer.setViewport( 0, 0, WIDTH, HEIGHT );
