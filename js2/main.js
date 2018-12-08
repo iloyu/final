@@ -58,7 +58,6 @@ var moveLeft = false;
 var moveRight = false;
 var canJump = false;
 var spaceUp = true; //处理一直按着空格连续跳的问题
-var fov=45;
 //datgui变量
 var gui;
 var datGui;
