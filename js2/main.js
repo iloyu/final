@@ -36,20 +36,21 @@ var upRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0,
 var horizontalRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10);
 var downRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, -1, 0), 0, 10);
 //场景对象，游戏变量
-var pig,buildings,tube,score=0;
+var pig,buildings,land,flos,tube,score=0;
 var cubeNum=10;
 var cubeHeight=250;
 var color = new THREE.Color();
 var angleSpeed=0.5;
 var boxes=[];
 var boxMeshes=[];
-
 var greenBalls;
 var particles;
 //记分板
-var fieldDistance;
+var fieldDistance,energyBar,replayMessage,energy=100;
 var clock = new THREE.Clock();
-
+fieldDistance = document.getElementById("distValue");
+replayMessage = document.getElementById("replayMessage");
+energyBar = document.getElementById("energyBar");
 var blocker = document.getElementById( 'blocker' );
 var instructions = document.getElementById( 'instructions' );
 var pointcontrolsEnabled = false;
@@ -62,7 +63,17 @@ var spaceUp = true; //处理一直按着空格连续跳的问题
 //datgui变量
 var gui;
 var datGui;
-
+//调色板
+ var Colors ={
+        white:'#f7fff3',
+        flo1:'#e0c9e4',
+        flo2:'#e4c4c0',
+        flo3:'#e4a5a7',
+        branch1:'#435516',
+        branch2:'#55492c',
+        blue:'#65f7e2',
+        glass:'#95e9aa'
+    };
 
 
 
@@ -153,11 +164,9 @@ function initAxes(){
 
 }
 function initScene() {
-
-  fieldDistance = document.getElementById("distValue");
-
   scene = new THREE.Scene();
   // scene.background=createCubeMap();
+   scene.fog = new THREE.Fog('#f7fff3', 100,950);
   // scene.fog = new THREE.Fog( 0xf7d9aa, 450, 500);
   renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -219,6 +228,26 @@ function initCamera(){
     mapCamera.lookAt( new THREE.Vector3(0,-1,0) );
     scene.add(mapCamera);
 }
+ function Land(){
+        var geom = new THREE.PlaneGeometry( 1000, 1000);//(700,80,80);
+        geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+        var mat = new THREE.MeshPhongMaterial({
+            color:Colors.glass,
+            transparent:true,
+            opacity:0.8,
+            shading:THREE.FlatShading
+        });
+        this.mesh = new THREE.Mesh(geom, mat);
+        this.mesh.receiveShadow = true;
+
+    }
+    function CreateLand(){
+        land = new Land();
+        land.mesh.position.y = -550;
+        land.mesh.position.x = 80;
+        land.mesh.position.z = -50;
+        scene.add(land.mesh);
+    }
 function addCube(cubeNum){
 
     var boxGeometry = new THREE.BoxGeometry(50,cubeHeight,50,10,100,10);
@@ -229,7 +258,7 @@ function addCube(cubeNum){
       // var texture = THREE.ImageUtils.loadTexture("image/box.jpg",null,function(t)
       //       {
       //       });
-      // var boxMaterial = new THREE.MeshPhongMaterial( {map:texture});//color:Math.random()*0xffffff
+      // var boxMaterial = new THREE.MeshPhongMaterial( {map:texture,color:Math.random()*0xffffff});//,side:THREE.DoubleSide,side:THREE.DoubleSidecolor:Math.random()*0xffffff
       var box = new THREE.Mesh( boxGeometry, boxMaterial );
 
       box.position.z = Math.floor(radius*(Math.sin(i)+Math.random()) );//Math.random() * 2 - 1 ) * 50;
@@ -275,6 +304,7 @@ scene.add(cubeMesh);
 }
 function createLights()
 {
+
   var ambient = new THREE.AmbientLight(0x111111);
   scene.add(ambient);
   hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0xffffff, .9);
@@ -297,6 +327,75 @@ function createBuilding(){
 buildings=new ProceduralCity();
 scene.add(buildings)
 }
+ function MuitiFlo(){
+        this.mesh = new THREE.Object3D();
+        this.nFlowers = 50;
+        var stepAngle = Math.PI*2 / this.nFlowers;
+        for(var i=0; i<this.nFlowers; i++){
+            var c = new Flower();
+            var a = stepAngle*i;
+            var h = 650 + Math.random()*200;
+            c.mesh.position.y = Math.sin(a)*h;
+            c.mesh.position.x = Math.cos(a)*h;
+            c.mesh.position.z = -100-Math.random()*100;
+            c.mesh.rotation.z = a - Math.PI/2;
+            var s = 0.2+Math.random()*0.2;
+            c.mesh.scale.set(s,s,s);
+            this.mesh.add(c.mesh);
+        }
+ 
+    }
+ 
+    //花朵
+    function Flower() {
+        this.mesh = new THREE.Object3D();
+ 
+        var trunk = new THREE.CylinderGeometry(1, 2, 16);
+        var petal=new THREE.CylinderGeometry(1, 1, 14);
+        var trunkmat = new THREE.MeshPhongMaterial({color: Colors.branch1, shading: THREE.FlatShading});
+        var trunkpetal = new THREE.MeshPhongMaterial({color: Colors.flo2, shading: THREE.FlatShading});
+        var trunkpetal1 = new THREE.MeshPhongMaterial({color: Colors.flo3, shading: THREE.FlatShading});
+        var tmesh = new THREE.Mesh(trunk, trunkmat);
+        tmesh.castShadow = true;
+        tmesh.receiveShadow = true;
+        this.mesh.add(tmesh);
+ 
+        var angleIndex=(Math.PI*2)/12;
+        var len,moveX,moveY,moveZ,i;
+        for (i = 0; i <12; i++) {
+            var m = new THREE.Mesh(petal, trunkpetal);
+            m.castShadow = true;
+            m.receiveShadow = true;
+ 
+            m.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/3));
+            m.applyMatrix(new THREE.Matrix4().makeRotationY(angleIndex*i));
+            len=Math.cos(Math.PI/6)*7;
+            moveX=-Math.cos(angleIndex*i)*len;
+            moveY=8;
+            moveZ=Math.sin(angleIndex*i)*len;
+            m.position.set(moveX,moveY,moveZ);
+ 
+            this.mesh.add(m);
+        }
+ 
+        angleIndex=(Math.PI*2)/8;
+        for (i = 0; i <8; i++) {
+            var m1 = new THREE.Mesh(petal, trunkpetal1);
+            m1.castShadow = true;
+            m1.receiveShadow = true;
+ 
+            m1.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.PI/6));
+            m1.applyMatrix(new THREE.Matrix4().makeRotationY(angleIndex*i));
+            len=Math.cos(Math.PI/3)*7;
+            moveX=-Math.cos(angleIndex*i)*len;
+            moveY=8;
+            moveZ=Math.sin(angleIndex*i)*len;
+            m1.position.set(moveX,moveY,moveZ);
+ 
+            this.mesh.add(m1);
+        }
+    }
+ 
 
 
 function createPig() {
@@ -318,52 +417,53 @@ function createSky(){
   sky.mesh.position.y = 20;
   scene.add(sky.mesh);
 }
-
+function createFlo(){
+    flos = new MuitiFlo();
+        flos.mesh.position.y = -550;
+        scene.add(flos.mesh);
+}
 
 
 window.addEventListener("click", function(e) {
-  if (pointcontrols.enabled == true) {
-  var view=pointcontrols.getObject();
-    mousePos.x=(e.clientX/windowHalfX)-1;
-    mousePos.y=-(e.clientY/windowHalfY)+1;
-    var vector = new THREE.Vector3(mousePos.x, mousePos.y, 1);
-    vector = vector.unproject(camera);
-    // console.log(vector.sub(view.position));
-    var raycaster=new THREE.Raycaster(view.position, vector.sub(view.position).normalize());
+  if(energy>0) {
+    if (pointcontrols.enabled == true) {
+      var view=pointcontrols.getObject();
+      mousePos.x=(e.clientX-container.getBoundingClientRect().left)/container.offsetWidth*2-1;
+      // mousePos.x=(e.clientX/windowHalfX)-1;
+      mousePos.y=-(e.clientY-container.getBoundingClientRect().top)/container.offsetWidth*2+1;
+
+      // mousePos.y=-(e.clientY/windowHalfY)+1;
+      var vector = new THREE.Vector3(mousePos.x, mousePos.y, 1);
+      vector = vector.unproject(camera);
+       var raycaster=new THREE.Raycaster(view.position, vector.sub(view.position).normalize());
     var intersects=raycaster.intersectObjects(boxes);
     if(intersects.length>0)
     {
-       var points = [];
-       points.push(intersects[0].point);
-      points.push(view.position);//new THREE.Vector3(-30, 39.8, 30)
-      
+       // var points = [];
+       // points.push(intersects[0].point);
+       // points.push(view.position);
       // console.log(points[0],points[1]);
-      var mat = new THREE.MeshPhongMaterial({color: 0xFF0000,transparent:true,opacity:0.7});
-      var tubeGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 60, 1);
-      if (tube) scene.remove(tube);
-      tube = new THREE.Mesh(tubeGeometry, mat);
-      scene.add(tube);
+      // var mat = new THREE.MeshPhongMaterial({color: 0xFF0000,transparent:true,opacity:0.7});
+      // var tubeGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 60, 1);
+      // if (tube) scene.remove(tube);
+      // tube = new THREE.Mesh(tubeGeometry, mat);
+       // if (tube) scene.remove(tube);
+      // scene.add(tube);
       var position=intersects[0].object.position;
        particles.generate(10, position, 0x009999, 3);
-       console.log(intersects[0].object.name);
-      // TweenMax.to(intersects.object.mesh, 10, {x:targetX, y:targetY,
-      //   delay:Math.random() *.1, ease:Power2.easeOut, onComplete:function(){
      for( var i =0;i<boxes.length;i++)
      if(boxes[i].name==intersects[0].object.name)
      {
-      
-     console.log(boxes[i].name);
      boxes.splice(i,1);
      break;
    }
-       score+=10; 
+       score+=10;
        scene.remove(intersects[0].object);
-       if (tube) scene.remove(tube);
-      // }});
       }
-      fieldDistance.innerHTML = Math.floor(score);
     }
   }
+
+}
 );
 
 function render() {
@@ -434,6 +534,8 @@ function render() {
              if(horizontalIntersections[i].distance<15)
              {
               flag=true;
+              if(energy>0)
+              energy-=10;
               console.log("检测到碰撞");
               break;
             }
@@ -468,15 +570,16 @@ function render() {
             }
           pig.threegroup.position.copy(view.position);
           pig.threegroup.rotation.y=view.rotation.y+Math.PI;
- greenBalls.update(delta,angleSpeed,pig.threegroup.position);
-  fieldDistance.innerHTML = Math.floor(score);
+          greenBalls.update(delta,angleSpeed,pig.threegroup.position);
+          fieldDistance.innerHTML = Math.floor(score);
+          UpdateEnergy();
+  if(energy>0)
+    hideReplay();
     }
-
-    // renderer.setViewport( 0, 0, WIDTH, HEIGHT );
+    flos.mesh.rotation.z += .002;
       renderer.render(scene, camera);
       mapCamera.position.x=camera.position.x;
       mapCamera.position.z=camera.position.z;
-      // maprenderer.setViewport( 10, HEIGHT - mapHeight - 10, mapWidth, mapHeight );
       maprenderer.render(scene,mapCamera);
 }
 
@@ -486,15 +589,37 @@ function loop() {
   stats.update();
   requestAnimationFrame(loop);
 }
+function showReplay(){
+  replayMessage.style.display="block";
+}
 
+function hideReplay(){
+  replayMessage.style.display="none";
+}
+function UpdateEnergy(){
+  if(energy>100)energy=100;
+  energyBar.style.right = (100-energy)+"%";
+  energyBar.style.backgroundColor = (energy<50)? "#f25346" : "#68c3c0";
+  if (energy<30){
+    energyBar.style.animationName = "blinking";
+  }else{
+    energyBar.style.animationName = "none";
+  }
+
+  if (energy <1){
+   showReplay();
+  }
+}
 initPointerLock();
 initGui();
 initScene();
 initCamera();
-initAxes();
+// initAxes();
 initControls();
 createLights();
 createPig();
+CreateLand();
+createFlo();
 createGreenballs();
 addCube(cubeNum);
 // sky();

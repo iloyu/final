@@ -48,7 +48,7 @@ GreenBalls.prototype.update = function (deltaTime,angleSpeed,position) {
     const angle = this.meshArr[i].angle;
     const h = this.meshArr[i].h;
     this.meshArr[i].position.x = Math.sin(angle) * h;
-    this.meshArr[i].position.y =20;
+    this.meshArr[i].position.y =0;
     this.meshArr[i].position.z = Math.cos(angle) * h;
     // 判断是否碰撞
     let diffX = this.meshArr[i].position.x - position.x;
@@ -61,8 +61,8 @@ GreenBalls.prototype.update = function (deltaTime,angleSpeed,position) {
         this.mesh.remove(this.meshArr[i]);
         // this.meshArr.shift();
         // 计分
-      score += 50;
-
+      energy += 50;
+console.log(energy);
         break;
     }
   }
