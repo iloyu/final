@@ -20,7 +20,7 @@ Particle.prototype.animate = function(position, color, scale) {
   this.mesh.material.needsUpdate = true;
   this.mesh.scale.set(scale, scale, scale);
   // 向周围四散
-  const speed = 0.6 + Math.random() * 0.2;
+  const speed = 1 + Math.random() * 0.2;
   TweenMax.to(this.mesh.rotation, speed, {
     x: Math.random() * 12, 
     y: Math.random() * 12,

@@ -3,6 +3,7 @@ var scene,
   camera,mapCamera,
   pointcontrols,
   trackballcontrols,
+  orbitcontrols,
   fieldOfView,
   aspectRatio,
   nearPlane,
@@ -31,8 +32,8 @@ var upSpeed=800;
 var velocity = new THREE.Vector3();
 var rotation = new THREE.Vector3();
 var direction = new THREE.Vector3();
-var raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
-var upRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, 1, 0), 0, 10);
+// var raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
+// var upRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, 1, 0), 0, 10);
 var horizontalRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10);
 var downRaycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3( 0, -1, 0), 0, 10);
 //场景对象，游戏变量
@@ -79,6 +80,17 @@ var datGui;
 
 
 function initControls(){
+  //  orbitcontrols = new THREE.OrbitControls( camera, renderer.domElement );
+  // // 使动画循环使用时阻尼或自转 意思是否有惯性 
+  // orbitcontrols.enableDamping = true; 
+  // //动态阻尼系数 就是鼠标拖拽旋转灵敏度 
+  // //orbitcontrols.dampingFactor = 0.25; 
+  // //是否可以缩放 
+  // orbitcontrols.enableZoom = true; 
+  // //是否自动旋转 
+  // orbitcontrols.autoRotate = false; 
+  // //是否开启右键拖拽 
+  // orbitcontrols.enablePan = true; 
   trackballcontrols = new THREE.TrackballControls(camera);     //创建场景旋转缩放事件
   trackballcontrols.rotateSpeed = 2.5;
   trackballcontrols.zoomSpeed = 1.2;
@@ -216,20 +228,21 @@ function initCamera(){
   camera.position.z = 300;
   camera.position.y = 100;
   camera.lookAt(new THREE.Vector3(0, 0, 0));
-  // orthographic 相机
+  // 正交相机
     mapCamera = new THREE.OrthographicCamera(
-      window.innerWidth / -2,       // Left
-      window.innerWidth / 2,        // Right
-      window.innerHeight / 2,       // Top
-      window.innerHeight / -2,  // Bottom
-      -5000,                        // Near
-      2000 );                      // Far
-    mapCamera.up = new THREE.Vector3(0,0,-1);
+      window.innerWidth / -2,
+      window.innerWidth / 2,
+      window.innerHeight / 2,
+      window.innerHeight / -2,
+      1,
+      2000 );
+    mapCamera.up = new THREE.Vector3(1,0,0);
+    mapCamera.position.y=1000;
     mapCamera.lookAt( new THREE.Vector3(0,-1,0) );
     scene.add(mapCamera);
 }
  function Land(){
-        var geom = new THREE.PlaneGeometry( 1000, 1000);//(700,80,80);
+        var geom = new THREE.PlaneGeometry( 1000, 2000);//(700,80,80);
         geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
         var mat = new THREE.MeshPhongMaterial({
             color:Colors.glass,
@@ -412,17 +425,11 @@ function normalize(v,vmin,vmax,tmin, tmax){
   return tv;
 }
 
-function createSky(){
-  sky = new Sky();
-  sky.mesh.position.y = 20;
-  scene.add(sky.mesh);
-}
 function createFlo(){
     flos = new MuitiFlo();
         flos.mesh.position.y = -550;
         scene.add(flos.mesh);
 }
-
 
 window.addEventListener("click", function(e) {
   if(energy>0) {
@@ -431,10 +438,23 @@ window.addEventListener("click", function(e) {
       mousePos.x=(e.clientX-container.getBoundingClientRect().left)/container.offsetWidth*2-1;
       // mousePos.x=(e.clientX/windowHalfX)-1;
       mousePos.y=-(e.clientY-container.getBoundingClientRect().top)/container.offsetWidth*2+1;
-
       // mousePos.y=-(e.clientY/windowHalfY)+1;
       var vector = new THREE.Vector3(mousePos.x, mousePos.y, 1);
-      vector = vector.unproject(camera);
+      vector = vector.unproject(camera); 
+     //  var geom = new THREE.PlaneGeometry(64,64);
+     //  var texture = THREE.ImageUtils.loadTexture("image/timg.jpg",null,function(t)
+     //        {
+     //        });
+     //   var mat = new THREE.MeshPhongMaterial({
+     //        map:texture,color:0x000000
+     //    });
+     // var achor=new THREE.Mesh(geom,mat);
+     // achor.position.copy(vector);
+     // scene.add(achor);
+      // var boxMaterial = new THREE.MeshPhongMaterial( {map:texture,color:Math.random()*0xffffff});//,side:THREE.DoubleSide,side:THREE.DoubleSidecolor:Math.random()*0xffffff
+    
+                // 将粒子系统加入场景 
+              
        var raycaster=new THREE.Raycaster(view.position, vector.sub(view.position).normalize());
     var intersects=raycaster.intersectObjects(boxes);
     if(intersects.length>0)
@@ -470,6 +490,7 @@ function render() {
     pig.smile.rotation.z = gui.smileRZ;
     speed=gui.Pigspeed;
     cubenum=gui.buildingNum;
+    // orbitcontrols.update();
      trackballcontrols.update();
     // pig.threegroup.rotation.y=gui.pigrot;
   // sky.mesh.rotation.x += .01;
@@ -624,7 +645,7 @@ createGreenballs();
 addCube(cubeNum);
 // sky();
 // createBuilding();
-createSky();
+// createSky();
 // createEnnemies();
 loop();
 

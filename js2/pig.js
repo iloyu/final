@@ -1,5 +1,5 @@
 var scale=0.5;
-var globalSpeedRate=1;
+
 //颜色+材质盘
 var yellowMat = new THREE.MeshPhongMaterial({
         color: 0xfdde8c,
@@ -173,8 +173,8 @@ Pig = function() {
 };
 Pig.prototype.update = function() {
 
-  this.tailAngle += this.tailSpeed / globalSpeedRate;
-  this.earAngle += this.earSpeed / globalSpeedRate;
+  this.tailAngle += this.tailSpeed;
+  this.earAngle += this.earSpeed;
   for (var i = 0; i < this.tailLine.geometry.vertices.length; i++) {
     var v = this.tailLine.geometry.vertices[i];
     v.y = Math.sin(this.tailAngle - (Math.PI / 3) * i) * this.tailAmplitude * i * i;
@@ -193,12 +193,10 @@ Pig.prototype.update = function() {
 };
 var PI=Math.PI;
 Pig.prototype.run = function(velo){
-
- var rot=-Math.atan(velo.z/velo.x);
-
- this.legFL.rotation.y=rot;
- this.legFR.rotation.y =rot;
- this.legBL.rotation.y=rot;
- this.legBR.rotation.y =rot;
+  var rot=-Math.atan(velo.z/velo.x);
+  this.legFL.rotation.y=rot;
+  this.legFR.rotation.y =rot;
+  this.legBL.rotation.y=rot;
+  this.legBR.rotation.y =rot;
 
 };
